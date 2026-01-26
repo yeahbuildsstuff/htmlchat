@@ -2,21 +2,24 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>HtmlChat v1.0</title>
+<title>HtmlChat v2.1</title>
 <style>
   body {
     margin: 0;
-    background: #f0f0f0;
-    font-family: Arial, sans-serif;
+    background: linear-gradient(to bottom, #e7ebf3, #d0d7e6);
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
     height: 100vh;
-    display: flex;
-    flex-direction: column;
+    overflow: hidden;
+  }
+
+  body.inverted {
+    filter: invert(1) brightness(1.1);
   }
 
   #nameScreen {
     position: absolute;
     inset: 0;
-    background: #e0e0e0;
+    background: rgba(0,0,0,0.35);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -24,47 +27,103 @@
     gap: 12px;
   }
 
+  #nameScreen h2 {
+    color: white;
+    margin-bottom: 4px;
+  }
+
+  #nameScreen input, #nameScreen button {
+    padding: 10px 14px;
+    font-size: 18px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+  }
+
+  #nameScreen input {
+    width: 220px;
+    background: linear-gradient(to bottom, #ffffff, #f0f3fa);
+  }
+
+  #nameScreen button {
+    background: linear-gradient(to bottom, #5a7cff, #4a6cff);
+    color: white;
+    cursor: pointer;
+  }
+
   #chatUI {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, #ffffff, #eef1f8);
     display: none;
-    flex: 1;
     flex-direction: column;
+    overflow: hidden;
   }
 
   #messages {
     flex: 1;
     overflow-y: auto;
-    padding: 10px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    gap: 8px;
+    background: linear-gradient(to bottom, #f7f9fc, #e3e8f2);
   }
 
   .msg {
-    background: white;
-    padding: 6px 10px;
-    margin: 4px 0;
-    border-radius: 4px;
-    box-shadow: 0 0 3px rgba(0,0,0,0.2);
+    background: linear-gradient(to bottom, #f5f7fb, #e7ecf5);
+    padding: 8px 12px;
+    border-radius: 8px;
     max-width: 80%;
+    box-shadow: 0 0 3px rgba(0,0,0,0.1);
     white-space: pre-wrap;
+  }
+
+  .username {
+    font-weight: bold;
+    color: #4a6cff;
+    margin-right: 4px;
   }
 
   #inputArea {
     display: flex;
-    padding: 10px;
-    background: #ddd;
+    padding: 12px;
+    background: linear-gradient(to bottom, #e0e6f0, #cfd8e6);
+    gap: 8px;
   }
 
   #text {
     flex: 1;
-    padding: 8px;
+    padding: 10px;
     font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    background: linear-gradient(to bottom, #ffffff, #f0f3fa);
   }
 
   #sendBtn {
-    padding: 8px 14px;
-    margin-left: 8px;
+    padding: 10px 16px;
     font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(to bottom, #5a7cff, #4a6cff);
+    color: white;
+    cursor: pointer;
+  }
+
+  #modeToggle {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    font-size: 26px;
+    background: rgba(255,255,255,0.6);
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
   }
 </style>
 </head>
@@ -83,11 +142,13 @@
     <input id="text" type="text" placeholder="Type a message...">
     <button id="sendBtn">Send</button>
   </div>
+
+  <button id="modeToggle">\u263E</button>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, push, set, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, push, set, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDvyUQYW5M6OUdAvw1YF6ZKD7poebPT9xY",
@@ -108,11 +169,22 @@
   const nameScreen = document.getElementById("nameScreen");
   const nameInput = document.getElementById("nameInput");
   const nameBtn = document.getElementById("nameBtn");
-
   const chatUI = document.getElementById("chatUI");
   const messagesDiv = document.getElementById("messages");
   const textInput = document.getElementById("text");
   const sendBtn = document.getElementById("sendBtn");
+  const modeToggle = document.getElementById("modeToggle");
+
+  function containsNumberAboveThree(text) {
+    return /[4-9]/.test(text);
+  }
+
+  function filterMessage(text) {
+    if (containsNumberAboveThree(text)) {
+      return "[Content Deleted BROSKI]";
+    }
+    return text;
+  }
 
   function enterName() {
     const name = nameInput.value.trim();
@@ -127,24 +199,42 @@
     if (e.key === "Enter") enterName();
   });
 
-  function addMessage(text) {
+  function addMessage(text, name, key) {
     const msg = document.createElement("div");
     msg.className = "msg";
-    msg.textContent = text;
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "username";
+    nameSpan.textContent = name + ": ";
+
+    const textSpan = document.createElement("span");
+    textSpan.textContent = text;
+
+    msg.appendChild(nameSpan);
+    msg.appendChild(textSpan);
+
     messagesDiv.appendChild(msg);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    setTimeout(() => msg.remove(), 10000);
+
+    setTimeout(() => {
+      msg.remove();
+      remove(ref(db, "messages/" + key));
+    }, 10000);
   }
 
-  function send() {
+  async function send() {
     const text = textInput.value.trim();
     if (text === "") return;
+
+    const finalText = filterMessage(text);
+
     const msgRef = push(messagesRef);
     set(msgRef, {
       name: username,
-      text: text,
+      text: finalText,
       timestamp: Date.now()
     });
+
     textInput.value = "";
     textInput.blur();
   }
@@ -164,11 +254,15 @@
 
   onChildAdded(messagesRef, snapshot => {
     const msg = snapshot.val();
-    addMessage(msg.name + ": " + msg.text);
+    addMessage(msg.text, msg.name, snapshot.key);
   });
+
+  modeToggle.onclick = () => {
+    document.body.classList.toggle("inverted");
+    modeToggle.textContent =
+      document.body.classList.contains("inverted") ? "\u2600\uFE0F" : "\u263E";
+  };
 </script>
 
 </body>
 </html>
-
-

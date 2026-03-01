@@ -1,6 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>HtmlChat v2.1</title>
+<style>
+  body {
+    margin: 0;
+    background: linear-gradient(to bottom, #e7ebf3, #d0d7e6);
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    height: 100vh;
+    overflow: hidden;
+  }
 
+  body.inverted {
+    filter: invert(1) brightness(1.1);
+  }
 
- older="Your name">
+  #nameScreen {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+  }
+
+  #nameScreen h2 {
+    color: white;
+    margin-bottom: 4px;
+  }
+
+  #nameScreen input, #nameScreen button {
+    padding: 10px 14px;
+    font-size: 18px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+  }
+
+  #nameScreen input {
+    width: 220px;
+    background: linear-gradient(to bottom, #ffffff, #f0f3fa);
+  }
+
+  #nameScreen button {
+    background: linear-gradient(to bottom, #5a7cff, #4a6cff);
+    color: white;
+    cursor: pointer;
+  }
+
+  #chatUI {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, #ffffff, #eef1f8);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: linear-gradient(to bottom, #f7f9fc, #e3e8f2);
+  }
+
+  .msg {
+    background: linear-gradient(to bottom, #f5f7fb, #e7ecf5);
+    padding: 8px 12px;
+    border-radius: 8px;
+    max-width: 80%;
+    box-shadow: 0 0 3px rgba(0,0,0,0.1);
+    white-space: pre-wrap;
+  }
+
+  .username {
+    font-weight: bold;
+    color: #4a6cff;
+    margin-right: 4px;
+  }
+
+  #inputArea {
+    display: flex;
+    padding: 12px;
+    background: linear-gradient(to bottom, #e0e6f0, #cfd8e6);
+    gap: 8px;
+  }
+
+  #text {
+    flex: 1;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    background: linear-gradient(to bottom, #ffffff, #f0f3fa);
+  }
+
+  #sendBtn {
+    padding: 10px 16px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(to bottom, #5a7cff, #4a6cff);
+    color: white;
+    cursor: pointer;
+  }
+
+  #modeToggle {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    font-size: 26px;
+    background: rgba(255,255,255,0.6);
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+  }
+</style>
+</head>
+<body>
+
+<div id="nameScreen">
+  <h2>Enter your name</h2>
+  <input id="nameInput" type="text" placeholder="Your name">
   <button id="nameBtn">Continue</button>
 </div>
 
@@ -135,3 +266,4 @@
 
 </body>
 </html>
+
